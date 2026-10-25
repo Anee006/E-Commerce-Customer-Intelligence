@@ -53,7 +53,7 @@ def run_etl():
     date_df["quarter"] = date_df["full_date"].dt.quarter
     date_df["month"] = date_df["full_date"].dt.month
     date_df["day"] = date_df["full_date"].dt.day
-    date_df["day_of_week"] = date_df["full_date"].dt.dayofweek
+    date_df["day_of_week"] = date_df["full_date"].dt.day_of_week
     date_df["is_weekend"] = date_df["day_of_week"].isin([5, 6])
 
     date_dim = date_df.drop_duplicates(subset=["date_key"])
