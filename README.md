@@ -4,6 +4,18 @@ An end-to-end Machine Learning and Business Intelligence system built on the **O
 
 ---
 
+## Application Overview
+![alt text]({1CF4FD96-FD8E-4C28-8F2A-BD1A2EA0C48C}.png)
+![alt text]({77BE9256-2B67-4D43-9FCA-4FBEFCB9E0C6}.png)
+![alt text]({36ECC7BA-15AD-4E18-A8EC-383A5AAA00D0}.png)
+![alt text]({46AC77FA-7BF6-42FB-A9F0-FD186968BDA2}.png)
+![alt text]({03D1D473-84C2-4E32-B9B6-A1782964D33E}.png)
+![alt text]({CCB3D4FA-A153-401B-87E6-0797319FBC7B}.png)
+![alt text]({0553F924-BDFA-41D0-B33B-75AD82B7247A}.png)
+![alt text]({306AE6D9-C944-400D-964C-10BA1A54476A}.png)
+
+---
+
 ## System Architecture
 
 ```text
