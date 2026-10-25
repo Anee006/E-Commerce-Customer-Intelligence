@@ -67,19 +67,23 @@ The Data Engineering pipeline extracts data from 9 CSV files, translates Portugu
 
 ## Dataset Insights & RFM Segmentation Behavior
 ### 1. Dataset Reality & Distribution Characteristics
-The **Olist Brazilian E-Commerce dataset** exhibits a heavy long-tail distribution typical of consumer marketplace environments, characterized by an extreme **97% single-purchase rate**:
-* **Single-Order Customers ($\sim 97\%$):** The vast majority of unique customers in the dataset recorded a single historical purchase ($\text{Frequency} = 1$).
-* **Repeat Purchasers ($\sim 3\%$):** Only a small fraction of unique buyers returned for multiple orders ($\text{Frequency} \ge 2$).
+The **Olist Brazilian E-Commerce dataset** exhibits a heavy long-tail distribution typical of consumer marketplaces, characterized by an approximately 97% single-purchase rate:
+
+- **Single-Order Customers (~97%):** The vast majority of unique customers in the dataset recorded only one historical purchase (`Frequency = 1`).
+- **Repeat Purchasers (~3%):** Only a small fraction of unique buyers made multiple purchases (`Frequency >= 2`).
 
 ### 2. Mathematical Impact on K-Means Clustering
-Because K-Means clustering operates on log-transformed features ($\ln(1 + x)$) to mitigate extreme skewness:
-1. **Feature Invariance on Frequency:** For single-purchase customers, the transformed frequency feature evaluates to:
-   $$\text{Log\_Frequency} = \ln(1 + 1) = 0.693$$
-   Since $97\%$ of observations share this identical frequency coordinate, the K-Means algorithm relies primarily on **Monetary Spend** and **Recency** to segment the primary customer base.
+K-Means clustering operates on log-transformed features using the formula `ln(1 + x)` to reduce the impact of extreme skewness.
 
-2. **Dynamic Bucket Allocation:** Consequently, single-purchase customers naturally fall into two primary clusters based on their single-transaction monetary value:
-   * **Regular Customer:** Moderate lifetime spenders (e.g., $\$10 - \$200$).
-   * **VIP / High Spender:** High lifetime spenders (e.g., $\$300+$).
+1. **Feature Invariance on Frequency:** For single-purchase customers, the transformed frequency feature is calculated as:
+
+   `Log_Frequency = ln(1 + 1) ≈ 0.693`
+
+   Since approximately 97% of observations share this same frequency value, the K-Means algorithm relies primarily on **Monetary Spend** and **Recency** to segment the main customer base.
+
+2. **Dynamic Bucket Allocation:** Consequently, single-purchase customers may fall into two primary clusters based on their single-transaction monetary value:
+   - **Regular Customer:** Moderate lifetime spenders (e.g., $10–$200).
+   - **VIP / High Spender:** High lifetime spenders (e.g., $300 and above).
 
 ### 3. Cluster Verification & Slider Test Bench
 The remaining segments (**Low-Value / At-Risk** and **VIP Loyal Customer**) are activated when evaluating customers with elevated **Recency** (extended inactivity) or **Frequency** (repeat purchases). 
