@@ -1,10 +1,17 @@
 # An interactive web app allowing users to view real-time KPIs, perform RFM customer segmentation, test churn probability, and receive product recommendations
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
 import plotly.express as px
+from src.config import DATABASE_URL
+from sqlalchemy import create_engine
+from sklearn.decomposition import PCA
 
 st.set_page_config(page_title="E-Commerce Customer Intelligence", layout="wide")
 
@@ -83,6 +90,59 @@ elif choice == "2. RFM Segmentation":
         segment_name = cluster_mapping.get(cluster_id, f"Cluster {cluster_id}")
 
         st.success(f"Assigned Cluster {cluster_id}: **{segment_name}**")
+
+    st.markdown("---")
+    st.subheader("2D PCA Cluster Visualization")
+
+    # Load RFM dataset sample to show cluster distribution
+    @st.cache_data
+    def load_cluster_plot():
+        engine = create_engine(DATABASE_URL)
+        query = """
+        SELECT 
+            c.customer_unique_id,
+            MAX(d.full_date) AS max_date,
+            COUNT(DISTINCT f.order_id) AS frequency,
+            SUM(f.total_value) AS monetary
+        FROM fact_sales f
+        JOIN dim_customer c ON f.customer_key = c.customer_key
+        JOIN dim_date d ON f.date_key = d.date_key
+        GROUP BY c.customer_unique_id
+        LIMIT 2000  -- Sample 2000 points for quick rendering
+        """
+        df = pd.read_sql(query, engine)
+        max_date = pd.to_datetime(df["max_date"]).max()
+        df["recency"] = (max_date - pd.to_datetime(df["max_date"])).dt.days
+        
+        # Scale & Predict
+        log_df = np.log1p(df[["recency", "frequency", "monetary"]])
+        scaler = joblib.load("saved_models/rfm_scaler.joblib")
+        kmeans = joblib.load("saved_models/kmeans_rfm.joblib")
+        mapping = joblib.load("saved_models/rfm_cluster_mapping.joblib")
+        
+        scaled = scaler.transform(log_df)
+        clusters = kmeans.predict(scaled)
+        df["Segment"] = [mapping.get(c, f"Cluster {c}") for c in clusters]
+        
+        # Apply 2D PCA
+        pca = PCA(n_components=2)
+        pca_coords = pca.fit_transform(scaled)
+        df["PC1"] = pca_coords[:, 0]
+        df["PC2"] = pca_coords[:, 1]
+        
+        return df
+
+    try:
+        plot_df = load_cluster_plot()
+        fig = px.scatter(
+            plot_df, x="PC1", y="PC2", color="Segment",
+            title="Customer Cluster Boundaries (PCA Reduced)",
+            hover_data=["recency", "frequency", "monetary"]
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    except Exception as e:
+        st.info("Run all pipeline scripts to render PCA visualization.")
 
 # Module 3: Churn Risk Predictor
 elif choice == "3. Churn Risk Predictor":
