@@ -1,6 +1,6 @@
 # E-Commerce Customer Intelligence Platform
 
-An end-to-end Machine Learning and Business Intelligence system built on the **Olist Brazilian E-Commerce Dataset**. This platform transforms raw transactional CSVs into a **MySQL Star Schema Data Warehouse**, extracts machine learning features, trains predictive models, generates time series revenue forecasts, builds Power BI reports, and serves an interactive **Streamlit Web App**.
+An end-to-end Machine Learning and Business Intelligence system built on the **Olist Brazilian E-Commerce Dataset**. This platform transforms raw transactional CSVs into a **MySQL Star Schema Data Warehouse**, applying **Data Mining & Machine Learning algorithms** (RFM Clustering, Churn Classification, Market Basket Analysis, and Revenue Forecasting), and serving real-time analytics via a **Streamlit Web Application** and a **Power BI Executive Dashboard**.
 
 ---
 
@@ -10,18 +10,69 @@ An end-to-end Machine Learning and Business Intelligence system built on the **O
 Olist CSVs ➔ Python ETL ➔ MySQL Star Schema ➔ ML / Forecasting ➔ Power BI / Streamlit App
 ```
 
-### Core Modules
-1. **Star Schema Data Warehouse:** Fact and Dimension modeling (`fact_sales`, `dim_customer`, `dim_product`, `dim_date`).
-2. **RFM & K-Means Clustering:** Unsupervised customer segmentation using Recency, Frequency, and Monetary metrics.
-3. **Churn / Repeat Purchase Classifier:** Machine learning classification using Random Forest.
-4. **Market Basket Analysis:** Association Rule Mining via the Apriori algorithm for product recommendations.
-5. **Time Series Sales Forecasting:** Exponential Smoothing models to aggregate sales and project future monthly revenue.
-6. **Power BI Executive Dashboard:** MySQL-connected interactive dashboard featuring executive sales KPIs, customer demographic maps, logistics analytics, and order distribution.
-7. **Streamlit Web App:** Interactive control center for business KPIs, live model inferences, product cross-selling engine, time series revenue projections, and embedded Power BI reports.
+### Tech Stack
+| Layer | Technology |
+|---|---|
+| **Data Storage** | MySQL 8.x |
+| **Data Engineering & ETL** | Python 3.9+, Pandas, SQLAlchemy, PyMySQL |
+| **Customer Segmentation** | Scikit-learn (K-Means, PCA) |
+| **Predictive Classification** | Scikit-learn (Random Forest) |
+| **Cross-Sell Mining** | Mlxtend (Apriori Algorithm) |
+| **Time Series Forecasting** | Statsmodels (Holt-Winters ES) |
+| **Deployment & UI** | Streamlit, Plotly, Power BI Desktop |
 
 ---
 
-## Cloning Guidelines
+## ETL & MySQL Star Schema Design
+The Data Engineering pipeline extracts data from 9 CSV files, translates Portuguese category names into formatted English, handles missing value imputations using medians, and loads structured dimensional tables into MySQL:
+
+- **fact_sales:** Central fact table containing order item metrics, monetary spend, customer keys, product keys, seller IDs, and date keys.
+- **dim_customer:** Customer geographic and unique identity metadata.
+- **dim_product:** Product categories (translated to English) and physical dimensions.
+- **dim_date:** Calendar metadata (year, quarter, month, day, day of week, weekend flags).
+
+---
+
+## Machine Learning & Data Mining Modules
+- **RFM Customer Segmentation:** Unsupervised K-Means Clustering operating on log-transformed ($\ln(1 + x)$) Recency, Frequency, and Monetary metrics, paired with 2D Principal Component Analysis (PCA) for visualization.
+
+- **Churn / Repeat Purchase Classifier:** Binary classification using Random Forest to predict the likelihood of repeat purchases based on historical order behaviors.
+
+- **Market Basket Cross-Sell Engine:** Apriori Association Rule Mining evaluated on lifetime customer category baskets to generate cross-selling recommendations based on Support, Confidence, and Lift metrics.
+
+- **Time Series Revenue Forecasting:** Holt-Winters Exponential Smoothing models aggregated on monthly sales data ('MS') to project 6-month future revenue trends.
+
+---
+
+## Dataset Insights & RFM Segmentation Behavior
+### 1. Dataset Reality & Distribution Characteristics
+The **Olist Brazilian E-Commerce dataset** exhibits a heavy long-tail distribution typical of consumer marketplace environments, characterized by an extreme **97% single-purchase rate**:
+* **Single-Order Customers ($\sim 97\%$):** The vast majority of unique customers in the dataset recorded a single historical purchase ($\text{Frequency} = 1$).
+* **Repeat Purchasers ($\sim 3\%$):** Only a small fraction of unique buyers returned for multiple orders ($\text{Frequency} \ge 2$).
+
+### 2. Mathematical Impact on K-Means Clustering
+Because K-Means clustering operates on log-transformed features ($\ln(1 + x)$) to mitigate extreme skewness:
+1. **Feature Invariance on Frequency:** For single-purchase customers, the transformed frequency feature evaluates to:
+   $$\text{Log\_Frequency} = \ln(1 + 1) = 0.693$$
+   Since $97\%$ of observations share this identical frequency coordinate, the K-Means algorithm relies primarily on **Monetary Spend** and **Recency** to segment the primary customer base.
+
+2. **Dynamic Bucket Allocation:** Consequently, single-purchase customers naturally fall into two primary clusters based on their single-transaction monetary value:
+   * **Regular Customer:** Moderate lifetime spenders (e.g., $\$10 - \$200$).
+   * **VIP / High Spender:** High lifetime spenders (e.g., $\$300+$).
+
+### 3. Cluster Verification & Slider Test Bench
+The remaining segments (**Low-Value / At-Risk** and **VIP Loyal Customer**) are activated when evaluating customers with elevated **Recency** (extended inactivity) or **Frequency** (repeat purchases). 
+
+To verify that all four cluster boundaries function correctly in the Streamlit application, test the following feature parameter combinations:
+
+| Target Segment | Recency (Days) | Frequency (Orders) | Monetary ($ Spend) | Expected Model Outcome |
+| :--- | :---: | :---: | :---: | :--- |
+| **Low-Value / At-Risk** | **300+** | **1** | **$20.00** | `Low-Value / At-Risk` |
+| **Regular Customer** | **30** | **1** | **$80.00** | `Regular Customer` |
+| **High Spender** | **60** | **2** | **$450.00** | `High Spender` |
+| **VIP Loyal Customer** | **15** | **4+** | **$1,200.00** | `VIP Loyal Customer` |
+
+## Project Setup & Execution Guide
 
 ### 1. Prerequisites
 - Python 3.9+
@@ -64,14 +115,10 @@ python scripts/04_train_apriori.py
 python scripts/05_train_forecasting.py
 
 # Power BI Dashboard
-1. Ensure MySQL Connector/NET is installed on your machine.
-2. Open power_bi/olist_customer_intelligence.pbix in Power BI Desktop.
-3. If prompted for credentials:
-    - Server: localhost:3306
-    - Database: olist_dw
-    - User: root
-    - Password: Your local MySQL password
-4. Click Refresh to load live data directly from your MySQL Data Warehouse.
+# 1. Ensure MySQL Connector/NET is installed on your machine.
+# 2. Open power_bi/olist_customer_intelligence.pbix in Power BI Desktop.
+# 3. Connect using Server: localhost:3306, Database: olist_dw.
+# 4. Click Refresh to load live data directly from your MySQL Data Warehouse.
 
 # Launch Streamlit Dashboard
 streamlit run app/main.py
