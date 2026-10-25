@@ -102,3 +102,30 @@ elif choice == "4. Cross-Sell Recommendations":
     else:
         st.warning("No association rules available.")
 
+elif choice == "5. Sales Forecasting":
+    st.header("Monthly Revenue Forecasting")
+    
+    try:
+        forecast_data = joblib.load("saved_models/sales_forecast.joblib")
+        hist_df = forecast_data["historical_sales"].reset_index()
+        hist_df.columns = ["Date", "Revenue"]
+        hist_df["Type"] = "Historical"
+
+        fore_df = forecast_data["forecast_sales"].reset_index()
+        fore_df.columns = ["Date", "Revenue"]
+        fore_df["Type"] = "Forecast"
+
+        combined_df = pd.concat([hist_df, fore_df], ignore_index=True)
+
+        fig = px.line(
+            combined_df, 
+            x="Date", 
+            y="Revenue", 
+            color="Type", 
+            line_dash="Type",
+            title="Historical Sales & 6-Month Projected Revenue"
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    except Exception as e:
+        st.error("⚠️ Run `python scripts/05_train_forecasting.py` first to generate forecast artifacts.")
