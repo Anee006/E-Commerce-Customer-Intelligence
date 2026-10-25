@@ -14,16 +14,18 @@ def train_apriori():
     engine = create_engine(DATABASE_URL)
 
     query = """
-    SELECT f.order_id, p.product_category_name
+    SELECT c.customer_unique_id AS basket_id, p.product_category_name
     FROM fact_sales f
+    JOIN dim_customer c ON f.customer_key = c.customer_key
     JOIN dim_product p ON f.product_key = p.product_key
     WHERE p.product_category_name != 'Unknown'
     """
     df = pd.read_sql(query, engine)
 
     print("Building Basket Matrix...")
-    basket = (df.groupby(['order_id', 'product_category_name'])['product_category_name'].count().unstack().reset_index().fillna(0)
-              .set_index('order_id'))
+    basket = (df.groupby(['basket_id', 'product_category_name'])['product_category_name']
+          .count().unstack().reset_index().fillna(0)
+          .set_index('basket_id'))
     
     basket_sets = basket.astype(bool)
 
