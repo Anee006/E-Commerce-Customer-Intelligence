@@ -2,6 +2,7 @@
 
 import streamlit as st
 import pandas as pd
+import numpy as np
 import joblib
 import plotly.express as px
 
@@ -56,20 +57,32 @@ if choice == "1. Executive Overview":
 # Module 2: RFM Customer Segmentation
 elif choice == "2. RFM Segmentation":
     st.header("Real-Time RFM Customer Segment Predictor")
-    recency = st.slider("Recency (Days since last order)", 0, 365, 30)
-    frequency = st.slider("Frequency (Total Lifetime Orders)", 1, 50, 2)
-    monetary = st.number_input("Monetary ($ Lifetime Spend)", 10.0, 10000.0, 250.0)
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        recency = st.slider("Recency (Days since last order)", 0, 365, 120)
+    with col2:
+        frequency = st.slider("Frequency (Total Lifetime Orders)", 1, 20, 1)
+    with col3:
+        monetary = st.number_input("Monetary ($ Lifetime Spend)", 10.0, 5000.0, 85.0)
 
     if st.button("Classify Customer Segment"):
-        scaled = scaler.transform([[recency, frequency, monetary]])
-        cluster_id = kmeans.predict(scaled)[0]
-        segment_map = {
-            0: "Low-Value / At-Risk",
-            1: "Regular Customer",
-            2: "High-Spending Customer",
-            3: "VIP Customer"
-        }
-        st.success(f"Assigned Cluster {cluster_id}: **{segment_map.get(cluster_id, 'Segment ' + str(cluster_id))}**")
+        scaler = joblib.load("saved_models/rfm_scaler.joblib")
+        kmeans = joblib.load("saved_models/kmeans_rfm.joblib")
+        cluster_mapping = joblib.load("saved_models/rfm_cluster_mapping.joblib")
+
+        # Apply log transformation matching training data preprocessing
+        log_inputs = np.array([[
+            np.log1p(recency),
+            np.log1p(frequency),
+            np.log1p(monetary)
+        ]])
+
+        scaled_inputs = scaler.transform(log_inputs)
+        cluster_id = kmeans.predict(scaled_inputs)[0]
+        segment_name = cluster_mapping.get(cluster_id, f"Cluster {cluster_id}")
+
+        st.success(f"Assigned Cluster {cluster_id}: **{segment_name}**")
 
 # Module 3: Churn Risk Predictor
 elif choice == "3. Churn Risk Predictor":
@@ -96,7 +109,7 @@ elif choice == "4. Cross-Sell Recommendations":
             st.write("### Recommended Complementary Categories:")
             for idx, row in filtered.head(3).iterrows():
                 consequent = list(row['consequents'])[0]
-                st.info(f"👉 **{consequent}** (Lift: {row['lift']:.2f}, Confidence: {row['confidence']*100:.1f}%)")
+                st.info(f"**{consequent}** (Lift: {row['lift']:.2f}, Confidence: {row['confidence']*100:.1f}%)")
         else:
             st.warning("No cross-sell rules found for this category.")
     else:
