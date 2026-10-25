@@ -15,6 +15,7 @@ def run_etl():
     # load CSV files
     customers = pd.read_csv(os.path.join(data_path, "olist_customers_dataset.csv"))
     products = pd.read_csv(os.path.join(data_path, "olist_products_dataset.csv"))
+    translations = pd.read_csv(os.path.join(data_path, "product_category_name_translation.csv"))
     orders = pd.read_csv(os.path.join(data_path, "olist_orders_dataset.csv"))
     order_items = pd.read_csv(os.path.join(data_path, "olist_order_items_dataset.csv"))
 
@@ -27,11 +28,24 @@ def run_etl():
         "customer_zip_code_prefix", "customer_city", "customer_state"
     ]].drop_duplicates(subset=["customer_key"])
 
+    # Map Portuguese category names to English
+    print("Translating Product Categories to English...")
+    products = products.merge(translations, on="product_category_name", how="left")
+
+    # Fallback: Use English name if available, else original, else 'Unknown'
+    products["product_category_name"] = products["product_category_name_english"].fillna(
+        products["product_category_name"]
+    ).fillna("Unknown")
+
+    # Format category display names 
+    products["product_category_name"] = (
+        products["product_category_name"].str.replace("_", " ").str.title()
+    )
+
     # transform product dimension 
     print("Cleaning & Imputing Missing Values in Product Dimension...")
 
     products["product_key"] = products["product_id"]
-    products["product_category_name"] = products["product_category_name"].fillna("Unknown")
 
     for col in ["product_weight_g", "product_length_cm", "product_height_cm", "product_width_cm"]:
         products[col] = products[col].fillna(products[col].median())
