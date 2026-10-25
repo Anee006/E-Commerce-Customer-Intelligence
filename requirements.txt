@@ -5,5 +5,6 @@ pymysql
 scikit-learn
 mlxtend
 joblib
+statsmodels
 streamlit
 plotly
