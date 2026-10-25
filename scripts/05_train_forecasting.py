@@ -1,7 +1,6 @@
 # Time Series Sales Forecasting using statsmodels (ARIMA / Holt-Winters Exponential Smoothing)
 
 import pandas as pd
-import numpy as np
 from sqlalchemy import create_engine
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import joblib
@@ -15,7 +14,7 @@ def train_sales_forecasting():
     print("Querying Sales Data for Time Series Forecasting...")
     engine = create_engine(DATABASE_URL)
 
-    # Query daily aggregated sales
+    # Query daily aggregated sales 
     query = """
     SELECT 
         d.full_date,
@@ -27,23 +26,23 @@ def train_sales_forecasting():
     """
     df = pd.read_sql(query, engine)
     df['full_date'] = pd.to_datetime(df['full_date'])
-    
     df = df.set_index('full_date')
 
     # Resample to Monthly Sales ('MS' = Month Start)
-    print("📅 Aggregating Daily Sales to Monthly Totals...")
+    print("Aggregating Daily Sales to Monthly Totals...")
     monthly_sales = df['daily_revenue'].resample('MS').sum()
 
-    # Filter for complete months with revenue over $10,000
-    monthly_sales = monthly_sales[monthly_sales > 10000]
+    monthly_sales = monthly_sales.loc['2016-09-01':'2018-08-01']
 
-    monthly_sales.index.freq = 'MS'
+    # Ensure a strict monthly frequency index with no missing dates
+    monthly_sales = monthly_sales.asfreq('MS', fill_value=0)
 
     print(f"Total Valid Months Analyzed: {len(monthly_sales)}")
     print(monthly_sales.tail(6))
 
     # Fit Holt-Winters Exponential Smoothing Model
     print("Fitting Exponential Smoothing Time Series Model...")
+
     model = ExponentialSmoothing(
         monthly_sales, 
         trend='add', 
