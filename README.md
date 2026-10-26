@@ -55,7 +55,7 @@ The Data Engineering pipeline extracts data from 9 CSV files, translates Portugu
 ---
 
 ## Machine Learning & Data Mining Modules
-- **RFM Customer Segmentation:** Unsupervised K-Means Clustering operating on log-transformed `ln(1 + x)` Recency, Frequency, and Monetary metrics, paired with 2D Principal Component Analysis (PCA) for visualization.
+- **RFM Customer Segmentation:** Unsupervised K-Means Clustering operating on log-transformed Recency, Frequency, and Monetary metrics, paired with 2D Principal Component Analysis (PCA) for visualization.
 
 - **Churn / Repeat Purchase Classifier:** Binary classification using Random Forest to predict the likelihood of repeat purchases based on historical order behaviors.
 
