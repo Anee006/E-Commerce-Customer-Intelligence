@@ -150,6 +150,9 @@ python scripts/03_train_churn_classifier.py
 python scripts/04_train_apriori.py
 python scripts/05_train_forecasting.py
 
+# Evaluate Trained Models
+python scripts/06_evaluate_models.py      
+
 # Power BI Dashboard
 # 1. Ensure MySQL Connector/NET is installed on your machine.
 # 2. Open power_bi/olist_customer_intelligence.pbix in Power BI Desktop.
