@@ -151,14 +151,20 @@ python scripts/04_train_apriori.py
 python scripts/05_train_forecasting.py
 
 # Evaluate Trained Models
-python scripts/06_evaluate_models.py      
+python scripts/06_evaluate_models.py   
+
+# Launch Streamlit Dashboard
+streamlit run app/main.py
+
+# For Streamlit Community Cloud: Configure the required database credentials in your app's Secrets 
+# settings. The deployed app must use a database server that is accessible from the cloud environment; 
+# localhost refers to the cloud server, not your personal computer.
 
 # Power BI Dashboard
 # 1. Ensure MySQL Connector/NET is installed on your machine.
 # 2. Open power_bi/olist_customer_intelligence.pbix in Power BI Desktop.
 # 3. Connect using Server: localhost:3306, Database: olist_dw.
 # 4. Click Refresh to load live data directly from your MySQL Data Warehouse.
-
-# Launch Streamlit Dashboard
-streamlit run app/main.py
 ```
+
+Note: The database schema, ETL pipeline, trained models, and evaluation report should be prepared before using the dashboards. Follow the project scripts and configuration requirements for your local setup.
