@@ -5,6 +5,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import joblib
+import json
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -192,6 +193,7 @@ with st.sidebar:
             "Churn Risk Predictor",
             "Cross-Sell Recommendations",
             "Sales Forecasting",
+            "Model Evaluation Metrics",
         ],
         label_visibility="visible",
     )
@@ -555,6 +557,146 @@ elif choice == "Sales Forecasting":
     except Exception:
         st.error("The forecasting artifact `saved_models/sales_forecast.joblib` could not be loaded.")
         st.info("Run `python scripts/05_train_forecasting.py` in your terminal to regenerate it.")
+
+# Module 6: Model Evaluation Metrics
+elif choice == "Model Evaluation Metrics":
+    st.markdown(
+        '<div class="section-heading">Model Performance & Evaluation Dashboard</div>',
+        unsafe_allow_html=True,
+    )
+    st.caption(
+        "Quantitative evaluation for Data Mining and Machine Learning algorithms"
+    )
+
+    try:
+        with open("saved_models/model_evaluation_report.json", "r") as f:
+            metrics = json.load(f)
+
+        # 1. Random Forest Repeat Purchase Classifier
+        st.subheader("1. Random Forest Repeat Purchase Classifier")
+        rf_m = metrics.get("churn_random_forest", {})
+
+        col1, col2, col3, col4, col5 = st.columns(5)
+
+        col1.metric("Accuracy", f"{rf_m.get('accuracy', 0) * 100:.2f}%")
+        col2.metric("Precision", f"{rf_m.get('precision', 0) * 100:.2f}%")
+        col3.metric("Recall", f"{rf_m.get('recall', 0) * 100:.2f}%")
+        col4.metric("F1-Score", f"{rf_m.get('f1_score', 0) * 100:.2f}%")
+        col5.metric("ROC-AUC", f"{rf_m.get('roc_auc', 0):.4f}")
+
+        with st.expander("View Classification Performance Breakdown"):
+            st.markdown("""
+            - **Evaluation Target:** Repeat buyers (Orders > 1) versus
+              single-purchase customers (Orders = 1).
+            - **Input Features:** `avg_order_value` and `total_spent`.
+            - **Performance Summary:** Accuracy, precision, recall, F1-score,
+              and ROC-AUC summarize the classifier's performance.
+            """)
+
+        st.markdown("---")
+
+        # 2. RFM K-Means Customer Segmentation
+        st.subheader("2. RFM K-Means Clustering")
+        rfm_m = metrics.get("rfm_kmeans", {})
+
+        c1, c2, c3 = st.columns(3)
+
+        c1.metric(
+            "Silhouette Score",
+            f"{rfm_m.get('silhouette_score', 0):.4f}",
+        )
+        c2.metric(
+            "Inertia",
+            f"{rfm_m.get('inertia', 0):,.2f}",
+        )
+        c3.metric(
+            "Optimal Clusters (k)",
+            f"{rfm_m.get('num_clusters', 4)}",
+        )
+
+        with st.expander("View Clustering Details"):
+            st.markdown("""
+            - **Transformation:** Log-transformed features using `ln(1 + x)`
+              to reduce the impact of skewness.
+            - **Cluster Quality:** The Silhouette Score measures how well
+              observations fit within their assigned clusters compared
+              with other clusters.
+            """)
+
+        st.markdown("---")
+
+        # 3. Apriori Cross-Sell Engine
+        st.subheader("3. Apriori Market Basket Engine")
+        apr_m = metrics.get("apriori_cross_sell", {})
+
+        a1, a2, a3, a4 = st.columns(4)
+
+        a1.metric(
+            "Rules Discovered",
+            f"{apr_m.get('total_rules_discovered', 0):,}",
+        )
+        a2.metric(
+            "Average Lift",
+            f"{apr_m.get('average_lift', 0):.2f}",
+        )
+        a3.metric(
+            "Maximum Lift",
+            f"{apr_m.get('max_lift', 0):.2f}",
+        )
+        a4.metric(
+            "Average Confidence",
+            f"{apr_m.get('average_confidence_pct', 0):.2f}%",
+        )
+
+        with st.expander("View Association Rule Summaries"):
+            st.markdown("""
+            - **Support Threshold:** Reflects the frequency of itemset
+              co-occurrences used to identify association rules.
+            - **Lift:** Values greater than 1 indicate a positive
+              association between the antecedent and consequent,
+              relative to their independent occurrence.
+            """)
+
+        st.markdown("---")
+
+        # 4. Holt-Winters Sales Forecasting
+        st.subheader("4. Holt-Winters Revenue Forecasting")
+        hw_m = metrics.get("holt_winters_forecasting", {})
+
+        h1, h2, h3 = st.columns(3)
+
+        h1.metric(
+            "MAPE (Percentage Error)",
+            f"{hw_m.get('mape_pct', 0):.2f}%",
+        )
+        h2.metric(
+            "RMSE (USD)",
+            f"${hw_m.get('rmse', 0):,.2f}",
+        )
+        h3.metric(
+            "MAE (USD)",
+            f"${hw_m.get('mae', 0):,.2f}",
+        )
+
+        with st.expander("View Time Series Evaluation Details"):
+            st.markdown("""
+            - **MAPE:** Expresses forecast error as a percentage.
+            - **RMSE:** Measures the square root of the mean squared
+              forecast errors and penalizes larger errors more heavily.
+            - **MAE:** Measures the average absolute difference between
+              actual and forecast values.
+            - RMSE and MAE are displayed in USD, because the forecast
+              target is revenue measured in USD.
+            """)
+
+    except Exception as e:
+        st.error("Could not load the model evaluation report.")
+        st.info(
+            "Run `python scripts/06_evaluate_models.py` from your project "
+            "root to generate `saved_models/model_evaluation_report.json`."
+        )
+        st.caption(f"Details: {type(e).__name__}: {e}")
+
 
 st.markdown("---")
 st.markdown('<p class="small-note">E-Commerce Customer Intelligence · Analytics dashboard</p>', unsafe_allow_html=True)
