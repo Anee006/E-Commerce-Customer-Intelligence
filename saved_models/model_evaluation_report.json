@@ -1,0 +1,29 @@
+{
+    "rfm_kmeans": {
+        "type": "Clustering",
+        "silhouette_score": 0.3913,
+        "inertia": 84900.61,
+        "num_clusters": 4
+    },
+    "churn_random_forest": {
+        "type": "Classification",
+        "accuracy": 0.9892,
+        "precision": 0.8516,
+        "recall": 0.7824,
+        "f1_score": 0.8155,
+        "roc_auc": 0.9761
+    },
+    "apriori_cross_sell": {
+        "type": "Association Mining",
+        "total_rules_discovered": 468,
+        "average_lift": 1.97,
+        "max_lift": 105.33,
+        "average_confidence_pct": 9.23
+    },
+    "holt_winters_forecasting": {
+        "type": "Time Series Regression",
+        "rmse": 80924.03,
+        "mae": 63597.29,
+        "mape_pct": 12.76
+    }
+}
