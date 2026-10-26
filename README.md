@@ -65,6 +65,17 @@ The Data Engineering pipeline extracts data from 9 CSV files, translates Portugu
 
 ---
 
+## Model Evaluation & Performance Metrics
+
+| Algorithm | Model Type | Evaluation Metrics & Results |
+| :--- | :--- | :--- |
+| **Random Forest Classifier** | Classification | **Accuracy:** 98.92%<br>**Precision:** 85.16%<br>**Recall:** 78.24%<br>**F1-Score:** 81.55%<br>**ROC-AUC:** 0.9761 |
+| **K-Means RFM Clustering** | Unsupervised Learning | **Silhouette Score:** 0.3913<br>**Inertia:** 84,900.16<br>**Optimal Clusters (k):** 4 |
+| **Apriori Association Engine** | Market Basket Analysis | **Average Lift:** 1.97<br>**Maximum Lift:** 105.33<br>**Average Confidence:** 9.23%<br>**Association Rules Discovered:** 468 |
+| **Holt-Winters Smoothing** | Time Series Forecasting | **RMSE:** $80,924.03<br>**MAE:** $63,597.29<br>**MAPE:** 12.76% |
+
+---
+
 ## Dataset Insights & RFM Segmentation Behavior
 ### 1. Dataset Reality & Distribution Characteristics
 The **Olist Brazilian E-Commerce dataset** exhibits a heavy long-tail distribution typical of consumer marketplaces, characterized by an approximately 97% single-purchase rate:
